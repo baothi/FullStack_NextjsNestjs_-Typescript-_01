@@ -13,3 +13,4 @@ volumes:
   mongodb_data_container:
 
 # docker compose -p nest up -d
+# npm run lint -- --fix
