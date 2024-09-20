@@ -7,25 +7,29 @@ import { Model } from 'mongoose';
 import { hashPasswordHelper } from '@/helpers/util';
 import aqp from 'api-query-params';
 import mongoose from 'mongoose';
+import { CreateAuthDto } from '@/auth/dto/create-auth.dto';
+import { v4 as uuidv4 } from 'uuid';
+import dayjs from 'dayjs';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectModel(User.name)
-    private userModel: Model<User>) {}
+    private userModel: Model<User>,
+  ) {}
 
   isEmailExit = async (email: string) => {
     const user = await this.userModel.exists({ email });
     if (user) return true;
     return false;
-  }
+  };
 
   async create(CreateUserDto: CreateUserDto) {
     const { name, email, password, phone, address, image } = CreateUserDto;
 
     // check email
     const isExist = await this.isEmailExit(email);
-    if (isExist){
+    if (isExist) {
       throw new BadRequestException(`Email already exists : ${email}`);
     }
 
@@ -33,11 +37,16 @@ export class UsersService {
     const hashPassword = await hashPasswordHelper(password);
     console.log(hashPassword);
     const user = await this.userModel.create({
-      name, email, password: hashPassword, phone, address, image
-    })
+      name,
+      email,
+      password: hashPassword,
+      phone,
+      address,
+      image,
+    });
     return {
-      _id: user.id
-    }
+      _id: user.id,
+    };
   }
 
   async findAll(query: string, current: number, pageSize: number) {
@@ -49,7 +58,7 @@ export class UsersService {
 
     const totalItems = (await this.userModel.find(filter)).length;
     const totalPages = Math.ceil(totalItems / pageSize);
-    const offset = (current - 1)* (pageSize);
+    const offset = (current - 1) * pageSize;
 
     const results = await this.userModel
       .find(filter)
@@ -70,7 +79,9 @@ export class UsersService {
 
   async update(updateUserDto: UpdateUserDto) {
     return await this.userModel.updateOne(
-      { _id: updateUserDto._id },{ ...updateUserDto });
+      { _id: updateUserDto._id },
+      { ...updateUserDto },
+    );
   }
 
   async remove(_id: string) {
@@ -81,5 +92,32 @@ export class UsersService {
     } else {
       throw new BadRequestException(`User with id ${_id} invalid`);
     }
+  }
+
+  async handleRegister(registerDto: CreateAuthDto) {
+    const { name, email, password } = registerDto;
+
+    // check email
+    const isExist = await this.isEmailExit(email);
+    if (isExist) {
+      throw new BadRequestException(`Email already exists : ${email}`);
+    }
+
+    // hash password
+    const hashPassword = await hashPasswordHelper(password);
+    console.log(hashPassword);
+    const user = await this.userModel.create({
+      name,
+      email,
+      password: hashPassword,
+      isActive: false,
+      codeId: uuidv4(),
+      codeExpired: dayjs().add(1, 'day'), // manipulate
+    });
+
+    // send email
+    return {
+      _id: user.id,
+    };
   }
 }
