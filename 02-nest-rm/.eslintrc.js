@@ -21,5 +21,11 @@ module.exports = {
     '@typescript-eslint/explicit-function-return-type': 'off',
     '@typescript-eslint/explicit-module-boundary-types': 'off',
     '@typescript-eslint/no-explicit-any': 'off',
+    'prettier/prettier': ['error', {
+      singleQuote: true, // Enforce single quotes
+      semi: true, // Enforce semicolons
+      trailingComma: 'all', // Add trailing commas where valid
+      printWidth: 80, // Max line length of 80 characters
+    }],
   },
 };
