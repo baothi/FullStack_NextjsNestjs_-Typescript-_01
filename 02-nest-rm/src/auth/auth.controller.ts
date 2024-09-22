@@ -11,10 +11,14 @@ import { LocalAuthGuard } from './passport/local-auth.guard';
 import { Public } from '@/decorator/customize';
 import { JwtAuthGuard } from './passport/jwt-auth.guard';
 import { CreateAuthDto } from './dto/create-auth.dto';
+import { MailerService } from '@nestjs-modules/mailer';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly mailerService: MailerService,
+  ) {}
 
   @Post('login')
   @Public()
@@ -33,5 +37,31 @@ export class AuthController {
   @Public()
   register(@Body() registerDto: CreateAuthDto) {
     return this.authService.handleRegister(registerDto);
+  }
+
+  @Get('mail')
+  @Public()
+  testMail() {
+    this.mailerService
+      .sendMail({
+        to: 'baothi246@gmail.com', // list of receivers
+        subject: 'Testing Nest MailerModule ✔', // Subject line
+        text: 'welcome', // plaintext body
+        template: './register.hbs', // HTML body content
+        context: {
+          name: 'hoaha2468',
+          activationCode: 1234,
+        },
+      })
+      .then((info) => {
+        console.log('Email sent successfully');
+        // In ra nội dung của email đã render từ template
+        console.log('Rendered template content:', info);
+      })
+      .catch((error) => {
+        console.error('Error sending email:', error);
+        return 'Failed to send email';
+      });
+    return 'ok';
   }
 }
