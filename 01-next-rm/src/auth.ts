@@ -23,7 +23,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           },
         })
 
-        if (!res.statusCode){
+        if (res.statusCode === 201){
           return {
             _id: res.data?.user?._id,
             email: res.data?.user?.email,
@@ -53,6 +53,10 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     session({ session, token }) {
       (session.user as IUser) = token.user
       return session
+    },
+    authorized: async ({ auth }) => {
+      // Logged in users are authenticated, otherwise redirect to login page
+      return !!auth
     },
   },
 })

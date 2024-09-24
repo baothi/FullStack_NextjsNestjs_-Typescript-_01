@@ -2,7 +2,6 @@
 import { signIn} from "@/auth";
 
 export async function authenticate(email: string, password: string) {
-    console.error(">>> check your error message: ");
     try {
         const r = await signIn("credentials", {
             email: email,
