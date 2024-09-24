@@ -2,12 +2,25 @@
 import { Button, Col, Divider, Form, Input, Row } from 'antd';
 import { ArrowLeftOutlined } from '@ant-design/icons';
 import Link from 'next/link';
+// import { signIn } from 'next-auth/react';
+import { authenticate } from '@/utils/actions';
+// import { useRouter } from 'next/router';
 
 const Login = () => {
+    // const router = useRouter();
 
     const onFinish = async (values: any) => {
+        const { email, password } = values;
+        const res = await authenticate(email, password);
+        // const result = await signIn("credentials", {
+        //   redirect: false,  // Prevent NextAuth from automatically redirecting
+        //   email,
+        //   password,
+        // });
 
-    };
+        console.log(res);
+      };
+    
 
     return (
         <Row justify={"center"} style={{ marginTop: "30px" }}>
