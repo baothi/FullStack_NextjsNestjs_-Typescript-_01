@@ -6,6 +6,7 @@ import { useContext } from 'react';
 import { DownOutlined, SmileOutlined } from '@ant-design/icons';
 import type { MenuProps } from 'antd';
 import { Dropdown, Space } from 'antd';
+import { signOut } from 'next-auth/react';
 // import { useSession } from 'next-auth/react';
 
 const AdminHeader = (props: any) => {
@@ -17,9 +18,9 @@ const AdminHeader = (props: any) => {
         {
             key: '1',
             label: (
-                <a target="_blank" rel="noopener noreferrer" href="https://www.antgroup.com">
-                    1st menu item
-                </a>
+                <span>
+                    Setting
+                </span>
             ),
         },
         {
@@ -44,7 +45,7 @@ const AdminHeader = (props: any) => {
         {
             key: '4',
             danger: true,
-            label: 'a danger item',
+            label: <span onClick={()=> signOut()}>Sign Out</span>,
         },
     ];
 

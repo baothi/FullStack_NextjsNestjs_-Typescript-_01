@@ -7,7 +7,7 @@ import { Model } from 'mongoose';
 import { hashPasswordHelper } from '@/helpers/util';
 import aqp from 'api-query-params';
 import mongoose from 'mongoose';
-import { CreateAuthDto } from '@/auth/dto/create-auth.dto';
+import { CodeAuthDto, CreateAuthDto } from '@/auth/dto/create-auth.dto';
 import { v4 as uuidv4 } from 'uuid';
 import dayjs from 'dayjs';
 import { MailerService } from '@nestjs-modules/mailer';
@@ -142,5 +142,62 @@ export class UsersService {
     return {
       _id: user.id,
     };
+  }
+
+  async handleActive(data: CodeAuthDto) {
+    const user = await this.userModel.findOne({
+      _id: data._id,
+      codeId: data.code,
+    });
+    if (!user) {
+      throw new BadRequestException('Mã Code không hợp lệ hoặc đã hết hạn');
+    }
+    // check expire code
+    const isBefforeCheck = dayjs().isBefore(user.codeExpired);
+    if (isBefforeCheck) {
+      //valid
+      await this.userModel.updateOne({ _id: data._id }, { isActive: true });
+    } else {
+      throw new BadRequestException('Mã Code không hợp lệ hoặc đã hết hạn');
+    }
+    return { isBefforeCheck };
+  }
+
+  async retryActive(email: string) {
+    const user = await this.userModel.findOne({ email });
+    if (!user) {
+      throw new BadRequestException('Tài Khoản Không tồn tại');
+    }
+    if (user.isActive) {
+      throw new BadRequestException('Tài khoản đã được kích hoạt');
+    }
+    const codeId = uuidv4();
+    // update user
+    await user.updateOne({
+      codeId: codeId,
+      // codeExpired: dayjs().add(1, 'day'), // manipulate
+      codeExpired: dayjs().add(5, 'minutes'),
+    });
+    // send email
+    this.mailerService
+      .sendMail({
+        to: user.email, // list of receivers
+        subject: 'Testing Nest MailerModule ✔', // Subject line
+        template: './register.hbs', // HTML body content
+        context: {
+          name: user?.name ?? user?.email,
+          activationCode: codeId,
+        },
+      })
+      .then((info) => {
+        console.log('Email sent successfully');
+        // In ra nội dung của email đã render từ template
+        console.log('Rendered template content:', info);
+      })
+      .catch((error) => {
+        console.error('Error sending email:', error);
+        return 'Failed to send email';
+      });
+    return { _id: user._id };
   }
 }
