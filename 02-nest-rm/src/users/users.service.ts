@@ -7,7 +7,7 @@ import { Model } from 'mongoose';
 import { hashPasswordHelper } from '@/helpers/util';
 import aqp from 'api-query-params';
 import mongoose from 'mongoose';
-import { CreateAuthDto } from '@/auth/dto/create-auth.dto';
+import { CodeAuthDto, CreateAuthDto } from '@/auth/dto/create-auth.dto';
 import { v4 as uuidv4 } from 'uuid';
 import dayjs from 'dayjs';
 import { MailerService } from '@nestjs-modules/mailer';
@@ -116,7 +116,7 @@ export class UsersService {
       isActive: false,
       codeId: codeId,
       // codeExpired: dayjs().add(1, 'day'), // manipulate
-      codeExpired: dayjs().add(1, 'minutes'),
+      codeExpired: dayjs().add(5, 'minutes'),
     });
 
     // send email
@@ -142,5 +142,24 @@ export class UsersService {
     return {
       _id: user.id,
     };
+  }
+
+  async handleActive(data: CodeAuthDto) {
+    const user = await this.userModel.findOne({
+      _id: data._id,
+      codeId: data.code,
+    });
+    if (!user) {
+      throw new BadRequestException('Mã Code không hợp lệ hoặc đã hết hạn');
+    }
+    // check expire code
+    const isBefforeCheck = dayjs().isBefore(user.codeExpired);
+    if (isBefforeCheck) {
+      //valid
+      await this.userModel.updateOne({_id: data._id}, { isActive: true });
+    } else {
+      throw new BadRequestException('Mã Code không hợp lệ hoặc đã hết hạn');
+    }
+    return { isBefforeCheck };
   }
 }
