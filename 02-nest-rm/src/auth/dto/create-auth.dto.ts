@@ -18,3 +18,17 @@ export class CodeAuthDto {
   @IsNotEmpty({ message: 'Please enter a valid code' })
   code: string;
 }
+
+export class changePasswordAuthDto {
+  @IsNotEmpty({ message: 'Please enter a valid email' })
+  email: string;
+
+  @IsNotEmpty({ message: 'Please enter a valid code' })
+  code: string;
+
+  @IsNotEmpty({ message: 'Please enter a valid password' })
+  password: string;
+
+  @IsNotEmpty({ message: 'Please enter a valid password' })
+  confirmPassword: string;
+}
