@@ -25,7 +25,8 @@ module.exports = {
       singleQuote: true, // Enforce single quotes
       semi: true, // Enforce semicolons
       trailingComma: 'all', // Add trailing commas where valid
-      printWidth: 80, // Max line length of 80 characters
+      printWidth: 80, // Max line length of 80 characters,
+      endOfLine: 'auto'
     }],
   },
 };

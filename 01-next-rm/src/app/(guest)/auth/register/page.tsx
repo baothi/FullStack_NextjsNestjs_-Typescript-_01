@@ -1,8 +1,8 @@
+import Register from "@/components/auth/register";
+
 const RegisterPage = () => {
     return (
-        <>
-            login page
-        </>
+        <Register />
     )
 }
 
